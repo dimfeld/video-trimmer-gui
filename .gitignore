@@ -1,3 +1,4 @@
+.vscode
 public/bundle.*
 public/utils.*
 build

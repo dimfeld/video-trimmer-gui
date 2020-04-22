@@ -1,5 +1,7 @@
 <script>
   import { padStart } from 'lodash-es';
+  import Button from './components/Button.svelte';
+  import Switch from './components/Switch.svelte';
 
   export let videoFile =
     'file:///Users/dimfeld/Downloads/Intro to Machine Learning - Lesson 3-YSFG_W8JxBo.mp4';
@@ -8,7 +10,9 @@
   let videoElement;
   let currentTime;
   let videoDuration;
+  let paused = true;
 
+  let stopAtEndTrim = true;
   let startTrim = 0;
   let endTrim;
 
@@ -28,6 +32,13 @@
   function playFromStartPoint() {
     videoElement.currentTime = startTrim;
     videoElement.play();
+  }
+
+  $: {
+    if(stopAtEndTrim && videoElement && !paused && currentTime >= endTrim) {
+      videoElement.pause();
+      videoElement.currentTime = endTrim;
+    }
   }
 
   function formatTime(t) {
@@ -57,20 +68,22 @@
     bind:this={videoElement}
     bind:currentTime
     bind:duration={videoDuration}
+    bind:paused
     src={videoFile} />
 
-  <div class="mt-4 flex justify-between">
-    <div class="flex flex-col spacing-y-4">
-      <button on:click={setStartTrim}>Set Start Point</button>
+  <div class="mt-4 flex justify-between px-4">
+    <div class="flex flex-col space-y-4">
+      <Button on:click={setStartTrim}>Set Start Point</Button>
+      <Button on:click={playFromStartPoint}>Play From Start Point</Button>
       <div>Start Point: {formatTime(startTrim)}</div>
-      <button on:click={playFromStartPoint}>Play From Start Point</button>
     </div>
 
     <!-- Add Step Left and Right Controls here. 100ms, 500ms, 1 sec, 5 sec -->
     <p>Time: {formatTime(currentTime)}</p>
 
-    <div class="flex flex-col spacing-y-4">
-      <button on:click={setEndTrim}>Set End Point</button>
+    <div class="flex flex-col space-y-4">
+      <Button on:click={setEndTrim}>Set End Point</Button>
+      <div><Switch bind:value={stopAtEndTrim} icon={true} /> Stop at End Trim Point</div>
       <div>End Point: {formatTime(endTrim)}</div>
     </div>
   </div>
