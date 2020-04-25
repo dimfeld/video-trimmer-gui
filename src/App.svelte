@@ -2,6 +2,7 @@
   import { padStart } from 'lodash-es';
   import Button from './components/Button.svelte';
   import Switch from './components/Switch.svelte';
+  import Trimmer from './Trimmer.svelte';
 
   export let videoFile =
     'file:///Users/dimfeld/Downloads/Intro to Machine Learning - Lesson 3-YSFG_W8JxBo.mp4';
@@ -71,7 +72,9 @@
     bind:paused
     src={videoFile} />
 
-  <div class="mt-4 flex justify-between px-4">
+  <Trimmer />
+
+  <div class="mt-4 flex justify-center space-x-8">
     <div class="flex flex-col space-y-4">
       <Button on:click={setStartTrim}>Set Start Point</Button>
       <Button on:click={playFromStartPoint}>Play From Start Point</Button>
@@ -83,7 +86,7 @@
 
     <div class="flex flex-col space-y-4">
       <Button on:click={setEndTrim}>Set End Point</Button>
-      <div><Switch bind:value={stopAtEndTrim} icon={true} /> Stop at End Trim Point</div>
+      <div>Stop at End Trim Point <Switch bind:value={stopAtEndTrim} /></div>
       <div>End Point: {formatTime(endTrim)}</div>
     </div>
   </div>
