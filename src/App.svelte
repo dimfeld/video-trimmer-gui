@@ -5,14 +5,12 @@
   import TextField from './components/TextField.svelte';
   import Label from './components/Label.svelte';
 
-  console.log('in app')
+  const { ipcRenderer, SettingsStore } = window;
+  const settings = new SettingsStore();
 
-  export let videoFile =
-    'file:///Users/dimfeld/Downloads/Intro to Machine Learning - Lesson 3-YSFG_W8JxBo.mp4';
-
-  let mainPath;
-  let introPath;
-  let outroPath;
+  let mainPath = settings.get('paths.main');
+  let introPath = settings.get('paths.intro');
+  let outroPath = settings.get('paths.outro');
 
   let videoElement;
   let currentTime;
@@ -29,22 +27,55 @@
   }
 
   function setStartTrim() {
-    startTrim = videoElement.currentTime;
+    startTrim = currentTime;
   }
 
   function setEndTrim() {
-    endTrim = videoElement.currentTime;
+    endTrim = currentTime;
   }
 
   function playFromStartPoint() {
-    videoElement.currentTime = startTrim;
+    currentTime = startTrim;
     videoElement.play();
   }
+
+  function selectVideo(type) {
+    let existingPath;
+    switch(type) {
+      case 'Intro':
+        existingPath = introPath;
+        break;
+      case 'Outro':
+        existingPath = outroPath;
+        break;
+      case 'Main':
+        existingPath = mainPath;
+        break;
+    }
+    ipcRenderer.send('show-open-dialog', { type, existingPath })
+  }
+
+  ipcRenderer.on('select-file', (event, { type, path}) => {
+    switch(type) {
+      case 'Intro':
+        introPath = path;
+        settings.set('paths.intro', path);
+        break;
+      case 'Outro':
+        outroPath = path;
+        settings.set('paths.outro', path);
+        break;
+      case 'Main':
+        mainPath = path;
+        settings.set('paths.main', path);
+        break;
+    }
+  })
 
   $: {
     if(stopAtEndTrim && videoElement && !paused && currentTime >= endTrim) {
       videoElement.pause();
-      videoElement.currentTime = endTrim;
+      currentTime = endTrim;
     }
   }
 
@@ -62,10 +93,6 @@
   }
 </script>
 
-<style>
-
-</style>
-
 <div class="w-full flex flex-col">
   <video
     width="1920"
@@ -76,7 +103,7 @@
     bind:currentTime
     bind:duration={videoDuration}
     bind:paused
-    src={videoFile} />
+    src={mainPath} />
 
   <div class="mt-4 flex justify-center space-x-8">
     <div class="flex flex-col space-y-4">
@@ -95,23 +122,23 @@
     </div>
   </div>
 
-  <div class="mt-8 flex flex-col justify-start space-y-4">
+  <div class="mt-8 mx-4 flex flex-col justify-start space-y-4">
     <div class="flex items-center space-x-2">
       <Label class="w-24 text-right" for="main-field">Main Video</Label>
-      <TextField class="w-48" id="main-field" />
-      <Button>Select Video</Button>
+      <TextField class="flex-grow" id="main-field" bind:value={mainPath} />
+      <Button on:click={() => selectVideo('Main')}>Select Video</Button>
     </div>
 
     <div class="flex items-center space-x-2">
       <Label class="w-24 text-right" for="intro-field">Intro</Label>
-      <TextField class="w-48" id="intro-field" />
-      <Button>Select Video</Button>
+      <TextField class="flex-grow" id="intro-field" bind:value={introPath} />
+      <Button on:click={() => selectVideo('Intro')}>Select Video</Button>
     </div>
 
     <div class="flex items-center space-x-2">
       <Label class="w-24 text-right" for="outro-field">Outro</Label>
-      <TextField class="w-48" id="outro-field" />
-      <Button>Select Video</Button>
+      <TextField class="flex-grow" id="outro-field" bind:value={outroPath} />
+      <Button on:click={() => selectVideo('Outro')}>Select Video</Button>
     </div>
 
   </div>

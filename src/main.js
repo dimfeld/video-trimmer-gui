@@ -22,6 +22,9 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1080,
     height: 800,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
   });
 
   mainWindow.loadURL(`file://${path.join(__dirname, '../build/index.html')}`);
@@ -32,6 +35,25 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+function showOpenDialog(type, existingPath) {
+  return dialog.showOpenDialogSync(mainWindow, {
+    title: `Choose a ${type} video file`,
+    defaultPath: existingPath,
+    filters: [
+      { name: 'Videos', extensions: ['mp4', 'mpg', 'mpeg', 'avi', 'mov', 'mkv']},
+      { name: 'All Files', extensions: ['*']},
+    ],
+    properties: ['openFile'],
+  });
+}
+
+ipcMain.on('show-open-dialog', (event, { type, existingPath }) => {
+  let file = showOpenDialog(type, existingPath);
+  if(file && file.length) {
+    event.sender.send('select-file', { type, path: file[0] });
+  }
+});
 
 async function processVideo({ intro, outro, main, startTrim, endTrim, output }) {
   const info = await probe(main);

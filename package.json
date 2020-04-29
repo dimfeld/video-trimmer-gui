@@ -19,6 +19,7 @@
     "pure-electron-dev": "NODE_ENV=development electron ."
   },
   "dependencies": {
+    "electron-store": "^5.1.1",
     "execa": "^4.0.0",
     "ffmpeg-probe": "^1.0.6",
     "ffmpeg-static": "^4.1.1",

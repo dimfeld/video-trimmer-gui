@@ -1,7 +1,7 @@
 <script>
   import Button from './components/Button.svelte';
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import ipcRenderer from 'ipc-renderer';
+  const { ipcRenderer } = window;
 
   const dispatch = createEventDispatcher();
 
