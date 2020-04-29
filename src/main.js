@@ -20,8 +20,8 @@ if (process.env.NODE_ENV === 'development') {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1080,
-    height: 800,
+    width: 800,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -55,8 +55,26 @@ ipcMain.on('show-open-dialog', (event, { type, existingPath }) => {
   }
 });
 
+function showSaveDialog() {
+  return dialog.showSaveDialogSync(mainWindow, {
+    title: `Select Output File`,
+    properties: ['createDirectory']
+  })
+}
+
+ipcMain.on('show-save-dialog', (event) => {
+  let file = showSaveDialog();
+  if(file) {
+    event.sender.send('select-output-file', file);
+  }
+})
+
 async function processVideo({ intro, outro, main, startTrim, endTrim, output }) {
-  const info = await probe(main);
+  const videoParamInfo = await Promise.all([intro, outro, main].map((p) => p ? probe(p) : null));
+  const [introInfo, mainInfo, outroInfo] = videoParamInfo;
+  const videoInfo = videoParamInfo.filter(Boolean);
+  const numVideos = videoInfo.length;
+
 
   let command = new Ffmpeg();
 
@@ -64,31 +82,105 @@ async function processVideo({ intro, outro, main, startTrim, endTrim, output }) 
     command = command.input(intro);
   }
 
-  command = command.input(main).inputOptions(`-ss ${startTrim} -to ${endTrim}`);
+  command = command.input(main).inputOptions([`-ss ${startTrim}`, `-to ${endTrim}`]);
 
   if(outro) {
     command = command.input(outro);
   }
 
-  let stopEncoding = () => {
+  function stopEncoding() {
+    console.log('command', command);
     command.kill('SIGTERM');
-  };
+  }
 
   ipcMain.once('cancel-encoding', stopEncoding);
 
-  command = command.output(output)
-    .autopad()
-    .size(`${info.width}x${info.height}`)
-    .on('start', () => mainWindow.webContents.send('encode-start'))
+  let indexes = Array.from({length: numVideos}, (v, i) => i);
+
+  const aValue = 'a'.charCodeAt(0);
+  let filters = videoInfo.map((info, i) => {
+    let initialStreamName = `[${i}:v]`;
+    let stream = initialStreamName;
+    let streamCounter = 0;
+
+    let filters = [];
+    const addFilter = (filter) => {
+      let inputStream = stream;
+      let suffix = String.fromCharCode(aValue + streamCounter++);
+      stream = `${i}${suffix}`;
+
+      filters.push({
+        ...filter,
+        input: [inputStream],
+        output: [stream]
+      });
+    }
+
+    if(info.width !== mainInfo.width || info.height !== mainInfo.height) {
+      addFilter({
+        filter: 'scale',
+        options: {
+          w: mainInfo.width,
+          h: mainInfo.height,
+          force_original_aspect_ratio: 'increase',
+          flags: 'bicubic,'
+        }
+      });
+
+      addFilter({
+        filter: 'pad',
+        options: {
+          w: mainInfo.width,
+          h: mainInfo.height,
+          // Center the video
+          x: -1,
+          y: -1,
+        },
+      });
+    }
+
+    return {
+      videoInput: initialStreamName,
+      audioInput: `[${i}:a]`,
+      stream,
+      filters,
+    };
+  });
+
+  command = command
+    .output(output)
+    .complexFilter([
+      ...filters.flatMap((f) => f.filters),
+      {
+        filter: 'concat',
+        options: {
+          n: numVideos,
+          v: 1,
+          a: 1,
+        },
+        inputs: filters.flatMap(({stream, audioInput}) => [stream, audioInput]),
+        outputs: ['outv', 'outa'],
+      }
+    ],
+    ['outv', 'outa'])
+    .on('start', (cmd) => {
+      console.log(cmd);
+      mainWindow.webContents.send('encode-start');
+    })
     .on('progress', (progress) => {
       mainWindow.webContents.send('encode-progress', progress);
     })
-    .on('end', () => mainWindow.webContents.send('encode-end'))
+    .on('end', () => {
+      console.log('DONE!');
+      mainWindow.webContents.send('encode-end');
+    })
     .on('error', (err, stdout, stderr) => {
-      ipcMain.removeEventListener('cancel-encoding', stopEncoding);
+      console.log(err);
+      console.log(stderr);
+      ipcMain.removeListener('cancel-encoding', stopEncoding);
       mainWindow.webContents.send('encode-error', {err, stdout, stderr});
     })
-    .run();
+    .run(output);
 }
 
 ipcMain.on('encode-video', (event, message) => processVideo(message));

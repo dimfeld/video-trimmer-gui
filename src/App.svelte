@@ -4,6 +4,7 @@
   import Switch from './components/Switch.svelte';
   import TextField from './components/TextField.svelte';
   import Label from './components/Label.svelte';
+  import EncodeProgress from './EncodeProgress.svelte';
 
   const { ipcRenderer, SettingsStore } = window;
   const settings = new SettingsStore();
@@ -91,6 +92,18 @@
       '0'
     )}.${padStart(ms.toString(), 3, '0')}`;
   }
+
+  function handleEncodeClick() {
+    ipcRenderer.send('show-save-dialog');
+  }
+
+  let outputPath;
+  let encoding = false;
+  ipcRenderer.on('select-output-file', (event, path) => {
+    encoding = true;
+    outputPath = path;
+  });
+
 </script>
 
 <div class="w-full flex flex-col">
@@ -141,5 +154,11 @@
       <Button on:click={() => selectVideo('Outro')}>Select Video</Button>
     </div>
 
+    <Button class="ml-auto" color="primary" on:click={handleEncodeClick}>Encode Video</Button>
+
   </div>
 </div>
+
+{#if encoding}
+  <EncodeProgress {introPath} {outroPath} {mainPath} {startTrim} {endTrim} {outputPath} on:close={() => encoding = false} />
+{/if}

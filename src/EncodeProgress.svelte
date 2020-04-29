@@ -1,12 +1,19 @@
 <script>
   import Button from './components/Button.svelte';
+  import Modal from './components/Modal.svelte';
   import { createEventDispatcher, onDestroy } from 'svelte';
   const { ipcRenderer } = window;
 
   const dispatch = createEventDispatcher();
 
-  export let encodeInfo;
+  export let mainPath;
+  export let introPath;
+  export let outroPath;
+  export let startTrim;
+  export let endTrim;
+  export let outputPath;
 
+  // TODO Calculate percentage based on our knowledge of duration since otherwise it's very wrong.
   let encodeProgress = {
     percent: 0,
     currentFps: 0,
@@ -28,7 +35,7 @@
     },
     [ENCODING]: {
       'encode-error': ERROR,
-      'encode-done': DONE,
+      'encode-end': DONE,
       'encode-cancel': CANCELLING,
     },
     [CANCELLING]: {},
@@ -96,7 +103,7 @@
     ipcRenderer.removeListener('encode-error', handleEncodeError);
   });
 
-  ipcRenderer.send('encode-video', encodeInfo);
+  ipcRenderer.send('encode-video', { intro: introPath, outro: outroPath, main: mainPath, startTrim, endTrim, output: outputPath });
 
   function close() {
     switch(state) {
@@ -115,18 +122,20 @@
 
 </script>
 
-<div class="flex flex-col h-48 items-center">
-{#if state === WAITING_TO_START}
-  <span>Starting...</span>
-{:else if state === ENCODING}
-  <span>Encoding {encodeProgress.percent}% at {encodeProgress.currentFps} FPS</span>
-  <progress class="w-7/8" max="100" value={encodeProgress.percent}>{encodeProgress.percent}%</progress>
-{:else if state === DONE}
-  <span>Done!</span>
-{:else if state === ERROR}
-  <p>Error! TODO show simple error info with option to show more complex error info.</p>
-  <p>{JSON.stringify(errorInfo)}</p>
-{/if}
-</div>
+<Modal height="200px" width="200px" closeButton={false} showHeader={false} showFooter={false} fullScreenOnMobile={false}>
+    <div class="flex flex-col items-center">
+    {#if state === WAITING_TO_START}
+      <span>Starting...</span>
+    {:else if state === ENCODING}
+      <span>Encoding {Math.round(encodeProgress.percent)}% at {encodeProgress.currentFps} FPS</span>
+      <progress class="w-7/8" max="100" value={encodeProgress.percent}>{encodeProgress.percent}%</progress>
+    {:else if state === DONE}
+      <span>Done!</span>
+    {:else if state === ERROR}
+      <p>Error! TODO show simple error info with option to show more complex error info.</p>
+      <p class="overflow-y-scroll">{JSON.stringify(errorInfo)}</p>
+    {/if}
+    </div>
 
-<Button color="primary" on:click|once={close}>{closeButtonText(state)}</Button>
+    <Button color="primary" on:click|once={close}>{closeButtonText(state)}</Button>
+</Modal>
