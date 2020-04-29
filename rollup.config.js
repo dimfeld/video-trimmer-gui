@@ -27,7 +27,7 @@ const babelConfig = {
 };
 
 export default {
-  input: 'src/main.js',
+  input: 'src/renderer.js',
   output: {
     sourcemap: true,
     format: 'iife',
@@ -50,8 +50,9 @@ export default {
     }),
 
     resolve({
-      mainFields: ['module', 'browser', 'main'],
-      extensions: ['.mjs', '.js', '.json', '.ts', '.svelte'],
+      // mainFields: ['module', 'browser', 'main'],
+      // extensions: ['.mjs', '.js', '.json', '.ts', '.svelte'],
+      browser: true,
       dedupe: (importee) =>
         importee === 'svelte' || importee.startsWith('svelte/'),
     }),

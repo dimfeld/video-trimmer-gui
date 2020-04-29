@@ -2,11 +2,17 @@
   import { padStart } from 'lodash-es';
   import Button from './components/Button.svelte';
   import Switch from './components/Switch.svelte';
-  import Trimmer from './Trimmer.svelte';
+  import TextField from './components/TextField.svelte';
+  import Label from './components/Label.svelte';
+
+  console.log('in app')
 
   export let videoFile =
     'file:///Users/dimfeld/Downloads/Intro to Machine Learning - Lesson 3-YSFG_W8JxBo.mp4';
-  export let videoType;
+
+  let mainPath;
+  let introPath;
+  let outroPath;
 
   let videoElement;
   let currentTime;
@@ -62,8 +68,8 @@
 
 <div class="w-full flex flex-col">
   <video
-    width="1080"
-    class="block mx-auto"
+    width="1920"
+    class="mx-auto"
     controls
     on:loadedmetadata={loadedMetadata}
     bind:this={videoElement}
@@ -71,8 +77,6 @@
     bind:duration={videoDuration}
     bind:paused
     src={videoFile} />
-
-  <Trimmer />
 
   <div class="mt-4 flex justify-center space-x-8">
     <div class="flex flex-col space-y-4">
@@ -82,12 +86,33 @@
     </div>
 
     <!-- Add Step Left and Right Controls here. 100ms, 500ms, 1 sec, 5 sec -->
-    <p>Time: {formatTime(currentTime)}</p>
+    <p class="w-32">Time: {formatTime(currentTime)}</p>
 
     <div class="flex flex-col space-y-4">
       <Button on:click={setEndTrim}>Set End Point</Button>
       <div>Stop at End Trim Point <Switch bind:value={stopAtEndTrim} /></div>
       <div>End Point: {formatTime(endTrim)}</div>
     </div>
+  </div>
+
+  <div class="mt-8 flex flex-col justify-start space-y-4">
+    <div class="flex items-center space-x-2">
+      <Label class="w-24 text-right" for="main-field">Main Video</Label>
+      <TextField class="w-48" id="main-field" />
+      <Button>Select Video</Button>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <Label class="w-24 text-right" for="intro-field">Intro</Label>
+      <TextField class="w-48" id="intro-field" />
+      <Button>Select Video</Button>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <Label class="w-24 text-right" for="outro-field">Outro</Label>
+      <TextField class="w-48" id="outro-field" />
+      <Button>Select Video</Button>
+    </div>
+
   </div>
 </div>

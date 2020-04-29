@@ -3,7 +3,7 @@
   "author": "Daniel Imfeld",
   "license": "MIT",
   "version": "0.0.1",
-  "main": "src/electron.js",
+  "main": "src/main.js",
   "scripts": {
     "build": "rollup -c",
     "autobuild": "rollup -c -w",
@@ -15,13 +15,16 @@
     "static-stories": "build-storybook -c .storybook -o .out",
     "electron": "run-s build pure-electron",
     "pure-electron": "electron .",
-    "electron-dev": "run-p autobuild pure-electron-dev",
+    "electron-dev": "NODE_ENV=development run-p autobuild pure-electron-dev",
     "pure-electron-dev": "NODE_ENV=development electron ."
   },
   "dependencies": {
     "execa": "^4.0.0",
+    "ffmpeg-probe": "^1.0.6",
     "ffmpeg-static": "^4.1.1",
+    "ffprobe-static": "^3.0.0",
     "file-url": "^3.0.0",
+    "fluent-ffmpeg": "^2.1.2",
     "lodash-es": "^4.17.15"
   },
   "devDependencies": {
@@ -45,6 +48,7 @@
     "@storybook/addon-viewport": "^5.2.1",
     "@storybook/svelte": "^5.2.1",
     "@tailwindcss/ui": "^0.1.3",
+    "@types/fluent-ffmpeg": "^2.1.14",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "autoprefixer": "^9.6.1",
