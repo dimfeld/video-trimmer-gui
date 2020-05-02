@@ -1,4 +1,5 @@
 <script>
+  import { sum } from 'lodash-es';
   import Button from './components/Button.svelte';
   import Modal from './components/Modal.svelte';
   import { createEventDispatcher, onDestroy } from 'svelte';
@@ -6,18 +7,28 @@
 
   const dispatch = createEventDispatcher();
 
-  export let mainPath;
-  export let introPath;
-  export let outroPath;
   export let startTrim;
   export let endTrim;
   export let outputPath;
+  export let videoInfo;
 
   // TODO Calculate percentage based on our knowledge of duration since otherwise it's very wrong.
   let encodeProgress = {
-    percent: 0,
+    frames: 0,
     currentFps: 0,
   };
+
+  let mainVideoFps = videoInfo.main.info.fps;
+  let totalFrames = sum(Object.entries(videoInfo).map(([type,v]) => {
+    if(!v.info) {
+      return 0;
+    }
+
+    let duration = type === 'main' ? endTrim - startTrim : v.info.duration / 1000;
+    return Math.round(duration * mainVideoFps);
+  }));
+
+  console.dir(videoInfo);
 
   let errorInfo;
 
@@ -103,7 +114,7 @@
     ipcRenderer.removeListener('encode-error', handleEncodeError);
   });
 
-  ipcRenderer.send('encode-video', { intro: introPath, outro: outroPath, main: mainPath, startTrim, endTrim, output: outputPath });
+  ipcRenderer.send('encode-video', { videoInfo, startTrim, endTrim, output: outputPath });
 
   function close() {
     switch(state) {
@@ -120,6 +131,8 @@
     }
   }
 
+  $: percent = Math.round(encodeProgress.frames / totalFrames * 100);
+
 </script>
 
 <Modal height="200px" width="200px" closeButton={false} showHeader={false} showFooter={false} fullScreenOnMobile={false}>
@@ -127,8 +140,8 @@
     {#if state === WAITING_TO_START}
       <span>Starting...</span>
     {:else if state === ENCODING}
-      <span>Encoding {Math.round(encodeProgress.percent)}% at {encodeProgress.currentFps} FPS</span>
-      <progress class="w-7/8" max="100" value={encodeProgress.percent}>{encodeProgress.percent}%</progress>
+      <span>Encoding {percent}% at {encodeProgress.currentFps} FPS</span>
+      <progress class="w-7/8" max="100" value={percent}>{percent}%</progress>
     {:else if state === DONE}
       <span>Done!</span>
     {:else if state === ERROR}

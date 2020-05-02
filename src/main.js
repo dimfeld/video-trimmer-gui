@@ -36,9 +36,9 @@ function createWindow() {
   });
 }
 
-function showOpenDialog(type, existingPath) {
+function showOpenDialog(description, existingPath) {
   return dialog.showOpenDialogSync(mainWindow, {
-    title: `Choose a ${type} video file`,
+    title: `Choose a ${description} video file`,
     defaultPath: existingPath,
     filters: [
       { name: 'Videos', extensions: ['mp4', 'mpg', 'mpeg', 'avi', 'mov', 'mkv']},
@@ -48,12 +48,25 @@ function showOpenDialog(type, existingPath) {
   });
 }
 
-ipcMain.on('show-open-dialog', (event, { type, existingPath }) => {
-  let file = showOpenDialog(type, existingPath);
+async function getInfo(event, type, path) {
+  try {
+    let info = await probe(path);
+    event.sender.send('select-file', { type, path, info });
+  } catch(e) {
+    console.error(e);
+    event.sender.send('select-file-error', { type, path });
+  }
+}
+
+ipcMain.on('show-open-dialog', async (event, { type, description, existingPath }) => {
+  let file = showOpenDialog(description, existingPath);
   if(file && file.length) {
-    event.sender.send('select-file', { type, path: file[0] });
+    getInfo(event, type, file[0]);
   }
 });
+
+ipcMain.on('get-info', (event, {type, path}) => getInfo(event, type, path));
+
 
 function showSaveDialog() {
   return dialog.showSaveDialogSync(mainWindow, {
@@ -69,23 +82,23 @@ ipcMain.on('show-save-dialog', (event) => {
   }
 })
 
-async function processVideo({ intro, outro, main, startTrim, endTrim, output }) {
-  const videoParamInfo = await Promise.all([intro, outro, main].map((p) => p ? probe(p) : null));
-  const [introInfo, mainInfo, outroInfo] = videoParamInfo;
-  const videoInfo = videoParamInfo.filter(Boolean);
-  const numVideos = videoInfo.length;
+async function processVideo({ videoInfo, startTrim, endTrim, output }) {
+  const { main, intro, outro } = videoInfo;
+  const mainInfo = main.info;
+  const probes = [intro.info, main.info, outro.info].filter(Boolean);
+  const numVideos = probes.length;
 
 
   let command = new Ffmpeg();
 
-  if(intro) {
-    command = command.input(intro);
+  if(intro.path) {
+    command = command.input(intro.path);
   }
 
-  command = command.input(main).inputOptions([`-ss ${startTrim}`, `-to ${endTrim}`]);
+  command = command.input(main.path).inputOptions([`-ss ${startTrim}`, `-to ${endTrim}`]);
 
-  if(outro) {
-    command = command.input(outro);
+  if(outro.path) {
+    command = command.input(outro.path);
   }
 
   function stopEncoding() {
@@ -95,10 +108,8 @@ async function processVideo({ intro, outro, main, startTrim, endTrim, output }) 
 
   ipcMain.once('cancel-encoding', stopEncoding);
 
-  let indexes = Array.from({length: numVideos}, (v, i) => i);
-
   const aValue = 'a'.charCodeAt(0);
-  let filters = videoInfo.map((info, i) => {
+  let filters = probes.map((info, i) => {
     let initialStreamName = `[${i}:v]`;
     let stream = initialStreamName;
     let streamCounter = 0;
