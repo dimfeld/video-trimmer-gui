@@ -135,8 +135,8 @@
 
 </script>
 
-<Modal height="200px" width="200px" closeButton={false} showHeader={false} showFooter={false} fullScreenOnMobile={false}>
-    <div class="flex flex-col items-center">
+<Modal width="w-64" closeButton={false} showHeader={false} showFooter={false} fullScreenOnMobile={false}>
+    <div style="min-height:100px" class="flex flex-col items-center">
     {#if state === WAITING_TO_START}
       <span>Starting...</span>
     {:else if state === ENCODING}
