@@ -59,8 +59,8 @@
   }
 
   function selectVideo(type) {
-    let { path, description } = videoInfo[type];;
-    ipcRenderer.send('show-open-dialog', { type, description, existingPath: path })
+    let { path, description } = videoInfo[type];
+    ipcRenderer.send('show-open-dialog', { type, description, existingPath: path || '' })
   }
 
   ipcRenderer.on('select-file', (event, { type, path, info }) => {
@@ -72,6 +72,11 @@
   ipcRenderer.on('select-file-error', (event, {type, path}) => {
     alert(`Failed to open video file ${path}`);
   });
+
+  function clearVideo(type) {
+    videoInfo[type].path = null;
+    videoInfo[type].info = null;
+  }
 
   $: {
     if(stopAtEndTrim && videoElement && !paused && currentTime >= endTrim) {
@@ -103,6 +108,9 @@
     encoding = true;
     outputPath = path;
   });
+
+  const xIcon = `<svg fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>`;
+  const rightIconClasses = "text-gray-400 rounded-lg transition-colors duration-200 ease-in hover:bg-gray-200"
 
 </script>
 
@@ -138,20 +146,20 @@
   <div class="mt-8 mx-4 flex flex-col justify-start space-y-4">
     <div class="flex items-center space-x-2">
       <Label class="w-24 text-right" for="main-field">Main Video</Label>
-      <TextField class="flex-grow" id="main-field" bind:value={videoInfo.main.path} />
-      <Button on:click={() => selectVideo('Main')}>Select Video</Button>
+      <TextField class="flex-grow" id="main-field" bind:value={videoInfo.main.path} rightIcon={xIcon} {rightIconClasses} on:click-right={() => clearVideo('main')}/>
+      <Button on:click={() => selectVideo('main')}>Select Video</Button>
     </div>
 
     <div class="flex items-center space-x-2">
       <Label class="w-24 text-right" for="intro-field">Intro</Label>
-      <TextField class="flex-grow" id="intro-field" bind:value={videoInfo.intro.path} />
-      <Button on:click={() => selectVideo('Intro')}>Select Video</Button>
+      <TextField class="flex-grow" id="intro-field" bind:value={videoInfo.intro.path} rightIcon={xIcon} {rightIconClasses} on:click-right={() => clearVideo('intro')}/>
+      <Button on:click={() => selectVideo('intro')}>Select Video</Button>
     </div>
 
     <div class="flex items-center space-x-2">
       <Label class="w-24 text-right" for="outro-field">Outro</Label>
-      <TextField class="flex-grow" id="outro-field" bind:value={videoInfo.outro.path} />
-      <Button on:click={() => selectVideo('Outro')}>Select Video</Button>
+      <TextField class="flex-grow" id="outro-field" bind:value={videoInfo.outro.path} rightIcon={xIcon} {rightIconClasses} on:click-right={() => clearVideo('outro')} />
+      <Button on:click={() => selectVideo('outro')}>Select Video</Button>
     </div>
 
     <Button class="ml-auto" color="primary" on:click={handleEncodeClick}>Encode Video</Button>

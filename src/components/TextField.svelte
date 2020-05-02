@@ -155,9 +155,13 @@
       </div>
     {:else if rightIcon}
       <div
-        class="bg-white absolute inset-y-1 right-1 pr-2 pl-1 flex items-center {rightIconClasses}"
+        class="bg-white absolute inset-y-1 right-1 mr-1 pr-1 pl-1 flex items-center {rightIconClasses}"
         on:click={() => dispatch('click-right')}>
-        <Icon class="h-5 w-5" data={rightIcon} />
+        {#if typeof rightIcon === 'string'}
+          <span class="w-5 h-5">{@html rightIcon}</span>
+        {:else}
+          <Icon class="h-5 w-5" data={rightIcon} />
+        {/if}
       </div>
     {/if}
   </div>
