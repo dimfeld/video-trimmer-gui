@@ -5,6 +5,14 @@
   "license": "MIT",
   "version": "0.0.1",
   "main": "src/main.js",
+  "build": {
+    "appId": "dev.imfeld.video-trimmer",
+    "mac": {
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    }
+  },
   "scripts": {
     "build": "rollup -c",
     "autobuild": "rollup -c -w",
@@ -17,7 +25,9 @@
     "electron": "run-s build pure-electron",
     "pure-electron": "electron .",
     "electron-dev": "NODE_ENV=development run-p autobuild pure-electron-dev",
-    "pure-electron-dev": "NODE_ENV=development electron ."
+    "pure-electron-dev": "NODE_ENV=development electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "dependencies": {
     "electron-context-menu": "^2.0.0",
@@ -59,6 +69,7 @@
     "babel-loader": "^8.0.6",
     "chokidar": "^3.3.1",
     "electron": "^8.2.3",
+    "electron-builder": "^22.6.0",
     "electron-reloader": "^1.0.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",

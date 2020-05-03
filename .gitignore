@@ -2,6 +2,7 @@
 public/bundle.*
 public/utils.*
 build
+dist
 ### Node ###
 # Logs
 logs
