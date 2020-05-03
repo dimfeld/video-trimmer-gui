@@ -118,46 +118,49 @@
 
 </script>
 
-<div class="w-full flex flex-col">
-  <video
-    width="1920"
-    class="mx-auto"
-    controls
-    on:loadedmetadata={loadedMetadata}
-    bind:this={videoElement}
-    bind:currentTime
-    bind:duration={videoDuration}
-    bind:paused
-    src={videoInfo.main.path} />
-
-  <div class="mt-4 flex justify-center space-x-8">
-    <div class="flex flex-col space-y-4">
-      <Button on:click={setStartTrim}>Set Start Point</Button>
-      <Button on:click={playFromStartPoint}>Play From Start Point</Button>
-      <div>Start Point: {formatTime(startTrim)}</div>
-    </div>
-
-    <!-- Add Step Left and Right Controls here. 100ms, 500ms, 1 sec, 5 sec -->
-    <p class="w-32">Time: {formatTime(currentTime)}</p>
-
-    <div class="flex flex-col space-y-4">
-      <Button on:click={setEndTrim}>Set End Point</Button>
-      <div>Stop at End Trim Point <Switch bind:value={stopAtEndTrim} /></div>
-      <div>End Point: {formatTime(endTrim)}</div>
-    </div>
+<div class="fixed overflow-hidden h-screen w-screen flex flex-col items-stretch">
+  <div class="flex-1" >
+    <video
+      class="absolute left-0 top-0 w-full h-full"
+      controls
+      on:loadedmetadata={loadedMetadata}
+      bind:this={videoElement}
+      bind:currentTime
+      bind:duration={videoDuration}
+      bind:paused
+      src={videoInfo.main.path} />
   </div>
 
-  <div class="mt-8 mx-4 flex flex-col justify-start space-y-4">
-    {#each ['main', 'intro', 'outro'] as type (type)}
-      <div class="flex items-center space-x-2">
-        <Label class="w-24 text-right" for="{type}-field">{videoInfo[type].description}</Label>
-        <TextField readonly class="flex-grow" id="{type}-field" bind:value={videoInfo[type].path} rightIcon={videoInfo[type].path ? xIcon : null} {rightIconClasses} on:click-right={() => clearVideo(type)}/>
-        <Button on:click={() => selectVideo(type)}>Select Video</Button>
+  <div class="flex-none px-4 pb-2">
+    <div class="mt-4 flex justify-center space-x-8">
+      <div class="flex flex-col space-y-4">
+        <Button on:click={setStartTrim}>Set Start Point</Button>
+        <Button on:click={playFromStartPoint}>Play From Start Point</Button>
+        <div>Start Point: {formatTime(startTrim)}</div>
       </div>
-    {/each}
 
-    <Button class="ml-auto" color="primary" on:click={handleEncodeClick}>Encode Video</Button>
+      <!-- Add Step Left and Right Controls here. 100ms, 500ms, 1 sec, 5 sec -->
+      <p class="w-32">Time: {formatTime(currentTime)}</p>
 
+      <div class="flex flex-col space-y-4">
+        <Button on:click={setEndTrim}>Set End Point</Button>
+        <div>Stop at End Trim Point <Switch bind:value={stopAtEndTrim} /></div>
+        <div>End Point: {formatTime(endTrim)}</div>
+      </div>
+    </div>
+
+    <div class="mt-8 mx-4 flex flex-col justify-start space-y-4">
+      {#each ['main', 'intro', 'outro'] as type (type)}
+        <div class="flex items-center space-x-2">
+          <Label class="w-24 text-right" for="{type}-field">{videoInfo[type].description}</Label>
+          <TextField readonly class="flex-grow" id="{type}-field" bind:value={videoInfo[type].path} rightIcon={videoInfo[type].path ? xIcon : null} {rightIconClasses} on:click-right={() => clearVideo(type)}/>
+          <Button on:click={() => selectVideo(type)}>Select Video</Button>
+        </div>
+      {/each}
+
+      <Button class="ml-auto" color="primary" on:click={handleEncodeClick}>Encode Video</Button>
+
+    </div>
   </div>
 </div>
 
