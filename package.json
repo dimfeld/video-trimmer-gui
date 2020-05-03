@@ -19,6 +19,7 @@
     "pure-electron-dev": "NODE_ENV=development electron ."
   },
   "dependencies": {
+    "electron-context-menu": "^2.0.0",
     "electron-store": "^5.1.1",
     "execa": "^4.0.0",
     "ffmpeg-probe": "^1.0.6",
@@ -57,6 +58,7 @@
     "babel-loader": "^8.0.6",
     "chokidar": "^3.3.1",
     "electron": "^8.2.3",
+    "electron-reloader": "^1.0.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-svelte3": "^2.7.3",

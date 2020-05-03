@@ -2,21 +2,28 @@ const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const Ffmpeg = require('fluent-ffmpeg');
 const probe = require('ffmpeg-probe');
+const contextMenu = require('electron-context-menu');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-let watcher;
+let renderWatcher;
 if (process.env.NODE_ENV === 'development') {
-  watcher = require('chokidar').watch(
+  try {
+    require('electron-reloader')(module, { watchRenderer: false });
+  } catch (_) {}
+
+  renderWatcher = require('chokidar').watch(
     path.join(__dirname, '../build/bundle.js'),
     { ignoreInitial: true }
   );
-  watcher.on('change', () => {
+  renderWatcher.on('change', () => {
     mainWindow && mainWindow.reload();
   });
 }
+
+contextMenu();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -29,8 +36,8 @@ function createWindow() {
 
   mainWindow.loadURL(`file://${path.join(__dirname, '../build/index.html')}`);
   mainWindow.on('closed', () => {
-    if (watcher) {
-      watcher.close();
+    if(renderWatcher) {
+      renderWatcher.close();
     }
     mainWindow = null;
   });
