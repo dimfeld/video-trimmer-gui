@@ -20,7 +20,7 @@
 
   let videoInfo = {
     main: {
-      description: 'Main',
+      description: 'Main Video',
       path: null,
       info: null,
     },
@@ -37,7 +37,10 @@
   };
 
   for(let type of Object.keys(videoInfo)) {
-    ipcRenderer.send('get-info', { type, path: settings.get(`paths.${type}`) });
+    let path = settings.get(`paths.${type}`);
+    if(path) {
+      ipcRenderer.send('get-info', { type, path });
+    }
   }
 
   function loadedMetadata() {
@@ -76,6 +79,7 @@
   function clearVideo(type) {
     videoInfo[type].path = null;
     videoInfo[type].info = null;
+    settings.set(`paths.${type}`, null);
   }
 
   $: {
@@ -144,23 +148,13 @@
   </div>
 
   <div class="mt-8 mx-4 flex flex-col justify-start space-y-4">
-    <div class="flex items-center space-x-2">
-      <Label class="w-24 text-right" for="main-field">Main Video</Label>
-      <TextField class="flex-grow" id="main-field" bind:value={videoInfo.main.path} rightIcon={xIcon} {rightIconClasses} on:click-right={() => clearVideo('main')}/>
-      <Button on:click={() => selectVideo('main')}>Select Video</Button>
-    </div>
-
-    <div class="flex items-center space-x-2">
-      <Label class="w-24 text-right" for="intro-field">Intro</Label>
-      <TextField class="flex-grow" id="intro-field" bind:value={videoInfo.intro.path} rightIcon={xIcon} {rightIconClasses} on:click-right={() => clearVideo('intro')}/>
-      <Button on:click={() => selectVideo('intro')}>Select Video</Button>
-    </div>
-
-    <div class="flex items-center space-x-2">
-      <Label class="w-24 text-right" for="outro-field">Outro</Label>
-      <TextField class="flex-grow" id="outro-field" bind:value={videoInfo.outro.path} rightIcon={xIcon} {rightIconClasses} on:click-right={() => clearVideo('outro')} />
-      <Button on:click={() => selectVideo('outro')}>Select Video</Button>
-    </div>
+    {#each ['main', 'intro', 'outro'] as type (type)}
+      <div class="flex items-center space-x-2">
+        <Label class="w-24 text-right" for="{type}-field">{videoInfo[type].description}</Label>
+        <TextField readonly class="flex-grow" id="{type}-field" bind:value={videoInfo[type].path} rightIcon={videoInfo[type].path ? xIcon : null} {rightIconClasses} on:click-right={() => clearVideo(type)}/>
+        <Button on:click={() => selectVideo(type)}>Select Video</Button>
+      </div>
+    {/each}
 
     <Button class="ml-auto" color="primary" on:click={handleEncodeClick}>Encode Video</Button>
 
