@@ -12,7 +12,6 @@
   export let outputPath;
   export let videoInfo;
 
-  // TODO Calculate percentage based on our knowledge of duration since otherwise it's very wrong.
   let encodeProgress = {
     frames: 0,
     currentFps: 0,
@@ -27,8 +26,6 @@
     let duration = type === 'main' ? endTrim - startTrim : v.info.duration / 1000;
     return Math.round(duration * mainVideoFps);
   }));
-
-  console.dir(videoInfo);
 
   let errorInfo;
 
