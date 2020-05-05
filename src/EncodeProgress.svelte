@@ -143,7 +143,7 @@
       <span>Done!</span>
     {:else if state === ERROR}
       <p>Error! TODO show simple error info with option to show more complex error info.</p>
-      <p class="overflow-y-scroll">{JSON.stringify(errorInfo)}</p>
+      <p class="h-32 bg-gray-50 overflow-scroll text-sm">{JSON.stringify(errorInfo)}</p>
     {/if}
     </div>
 
