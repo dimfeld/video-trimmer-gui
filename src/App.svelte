@@ -152,6 +152,14 @@
 
     return 'Off';
   }
+
+  function formatFadeSeconds(v) {
+    v = formatFade(v);
+    if(v !== 'Off') {
+      v += ' seconds';
+    }
+    return v;
+  }
 </script>
 
 <svelte:window on:keyup={handleKeyup} />
@@ -195,7 +203,7 @@
           placeholder="Click to choose a video..."
           on:click={() => selectVideo(type)}
           on:click-right={() => clearVideo(type)}/>
-          <Popup>
+          <Popup title="Fade In - {formatFadeSeconds(videoInfo[type].fadeIn)}">
             <span slot="label" class="flex justify-between w-12">
               <svg class="inline-block w-4 h-4" viewBox="0 0 100 100">
                 <polygon points="0,100 100,100 100,0" style="stroke:black;stroke-width:10;fill:transparent" />
@@ -206,7 +214,7 @@
               <FadeSelector label="Fade In" bind:value={videoInfo[type].fadeIn} />
             </div>
           </Popup>
-          <Popup>
+          <Popup title="Fade Out - {formatFadeSeconds(videoInfo[type].fadeOut)}">
             <span slot="label" class="flex justify-between w-12">
               <span>{formatFade(videoInfo[type].fadeOut)}</span>
               <svg class="inline-block w-4 h-4" viewBox="0 0 100 100">

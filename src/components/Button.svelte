@@ -1,6 +1,7 @@
 <script>
   export let size = 'md';
   export let disabled = undefined;
+  export let title = undefined;
   export let color = 'normal';
   export let justify = 'center';
   let classNames = '';
@@ -74,6 +75,7 @@
   {justifyClass}
   {classNames}"
   {disabled}
+  {title}
   on:click>
   <slot />
 </button>

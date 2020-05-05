@@ -2,7 +2,7 @@
   import Button from './Button.svelte';
   import { scale } from 'svelte/transition';
   import { cubicIn, cubicOut } from 'svelte/easing';
-  export let label;
+  export let title = undefined;
 
   let classNames = '';
   export { classNames as class };
@@ -34,7 +34,7 @@
 </script>
 
 <div style="display:inherit" use:clickOutside={open}>
-  <Button class={classNames} on:click={(evt) => open = !open }>
+  <Button {title} class={classNames} on:click={(evt) => open = !open }>
     <slot name="label" />
   </Button>
   {#if open}
