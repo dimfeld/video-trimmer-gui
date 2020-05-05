@@ -128,8 +128,8 @@ async function processVideo({ videoInfo, startTrim, endTrim, output }) {
 
       filters.push({
         ...filter,
-        input: [inputStream],
-        output: [stream]
+        inputs: [inputStream],
+        outputs: [stream]
       });
     }
 
@@ -172,7 +172,7 @@ async function processVideo({ videoInfo, startTrim, endTrim, output }) {
         filter: 'fade',
         options: {
           t: 'out',
-          st: info.duration - fadeOut,
+          st: (info.duration / 1000) - fadeOut,
           d: fadeOut
         }
       })
@@ -218,8 +218,9 @@ async function processVideo({ videoInfo, startTrim, endTrim, output }) {
       console.log(stderr);
       ipcMain.removeListener('cancel-encoding', stopEncoding);
       mainWindow.webContents.send('encode-error', {err, stdout, stderr});
-    })
-    .run(output);
+    });
+
+  command.run(output);
 }
 
 ipcMain.on('encode-video', (event, message) => processVideo(message));
