@@ -204,9 +204,9 @@
           on:click={() => selectVideo(type)}
           on:click-right={() => clearVideo(type)}/>
           <Popup title="Fade In - {formatFadeSeconds(videoInfo[type].fadeIn)}">
-            <span slot="label" class="flex justify-between w-12">
+            <span slot="label" class="flex justify-between w-12 items-center">
               <svg class="inline-block w-4 h-4" viewBox="0 0 100 100">
-                <polygon points="0,100 100,100 100,0" style="stroke:black;stroke-width:10;fill:transparent" />
+                <polygon points="0,100 100,100 100,0" style="stroke:black;stroke-width:5;fill:hsl(0,0%,85%)" />
               </svg>
               <span>{formatFade(videoInfo[type].fadeIn)}</span>
             </span>
@@ -215,10 +215,10 @@
             </div>
           </Popup>
           <Popup title="Fade Out - {formatFadeSeconds(videoInfo[type].fadeOut)}">
-            <span slot="label" class="flex justify-between w-12">
+            <span slot="label" class="flex justify-between w-12 items-center">
               <span>{formatFade(videoInfo[type].fadeOut)}</span>
               <svg class="inline-block w-4 h-4" viewBox="0 0 100 100">
-                <polygon points="0,100 100,100 0,0" style="stroke:black;stroke-width:10;fill:transparent" />
+                <polygon points="0,100 100,100 0,0" style="stroke:black;stroke-width:5;fill:hsl(0,0%,85%)" />
               </svg>
             </span>
             <div slot="popup">
