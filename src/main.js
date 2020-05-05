@@ -92,9 +92,8 @@ ipcMain.on('show-save-dialog', (event) => {
 async function processVideo({ videoInfo, startTrim, endTrim, output }) {
   const { main, intro, outro } = videoInfo;
   const mainInfo = main.info;
-  const probes = [intro.info, main.info, outro.info].filter(Boolean);
-  const numVideos = probes.length;
-
+  const videos = [intro, main, outro].filter((v) => v.info);
+  const numVideos = videos.length;
 
   let command = new Ffmpeg();
 
@@ -116,7 +115,7 @@ async function processVideo({ videoInfo, startTrim, endTrim, output }) {
   ipcMain.once('cancel-encoding', stopEncoding);
 
   const aValue = 'a'.charCodeAt(0);
-  let filters = probes.map((info, i) => {
+  let filters = videos.map(({info, fadeIn, fadeOut}, i) => {
     let initialStreamName = `[${i}:v]`;
     let stream = initialStreamName;
     let streamCounter = 0;
@@ -155,6 +154,28 @@ async function processVideo({ videoInfo, startTrim, endTrim, output }) {
           y: -1,
         },
       });
+    }
+
+    if(fadeIn) {
+      addFilter({
+        filter: 'fade',
+        options: {
+          t: 'in',
+          st: 0,
+          d: fadeIn,
+        },
+      });
+    }
+
+    if(fadeOut) {
+      addFilter({
+        filter: 'fade',
+        options: {
+          t: 'out',
+          st: info.duration - fadeOut,
+          d: fadeOut
+        }
+      })
     }
 
     return {
