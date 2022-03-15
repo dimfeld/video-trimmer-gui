@@ -38,7 +38,7 @@
     "ffprobe-static": "^3.0.0",
     "file-url": "^3.0.0",
     "fluent-ffmpeg": "^2.1.2",
-    "lodash-es": "^4.17.15"
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
